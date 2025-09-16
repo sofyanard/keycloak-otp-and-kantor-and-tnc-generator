@@ -19,12 +19,6 @@ import org.keycloak.services.managers.BruteForceProtector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.OutputStream;
-import java.io.InputStream;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-
-// import javax.json.JsonObject;
 import javax.mail.Message;
 import javax.mail.Session;
 import javax.mail.Transport;
@@ -35,7 +29,6 @@ import javax.naming.InitialContext;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -45,9 +38,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
-
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 /**
  * <pre>
@@ -490,71 +480,6 @@ public class ATRBPNCustomLoginAuthenticator  implements Authenticator {
             return value.replaceAll("(?<=.).(?=[^@]*?.@)", "*");
         } else {
             return value.replaceAll("\\d(?=(?:\\D*\\d){4})", "*");
-        }
-    }
-
-    private String callTncApi(String userId, String realm) throws Exception {
-        String url = "https://belajar.atrbpn.go.id/akuntnc/api/user-tnc";
-        String jsonPayload = String.format("{\"userid\":\"%s\",\"realm\":\"%s\"}", userId, realm);
-        log.info("jsonPayload: {}", jsonPayload);
-        log.info("calling tnc api for userid: {}", userId);
-        String htmlContent = "";
-
-        try {
-            URL endpoint = new URL(url);
-            log.info("sending request to: {}", endpoint);
-            HttpURLConnection conn = (HttpURLConnection) endpoint.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json");
-            conn.setDoOutput(true);
-
-            // Send JSON payload
-            try (OutputStream os = conn.getOutputStream()) {
-                byte[] input = jsonPayload.getBytes(StandardCharsets.UTF_8);
-                os.write(input, 0, input.length);
-            }
-
-            // Read response
-            int responseCode = conn.getResponseCode();
-            log.info("TNC API response code: {}", responseCode);
-
-            InputStream is = (responseCode < HttpURLConnection.HTTP_BAD_REQUEST) ? conn.getInputStream() : conn.getErrorStream();
-            StringBuilder response = new StringBuilder();
-
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
-                String line;
-                while ((line = br.readLine()) != null) {
-                    response.append(line.trim());
-                }
-            }
-
-            // Get response's content type...
-            String contentType = conn.getContentType();
-            log.info("Response Content-Type: {}", contentType);
-
-            if (contentType.contains("application/json")) {
-                String jsonResponse = response.toString();
-                log.info("jsonResponse: {}", jsonResponse);
-                String message = null;
-                try {
-                    JsonObject obj = JsonParser.parseString(jsonResponse).getAsJsonObject();
-                    message = obj.has("message") ? obj.get("message").getAsString() : null;
-                    htmlContent = message;
-                } catch (Exception e) {
-                    htmlContent = e.getMessage();
-                    log.error("Failed to parse JSON response", e);
-                }
-            } else if (contentType.equals("application/pdf")) {
-                log.info("Response is PDF");
-                htmlContent = "Response is PDF!";
-            } else {
-                log.warn("Unexpected content type: {}", contentType);
-                htmlContent = "Unexpected content type!";
-            }
-            return htmlContent;
-        } catch (Exception e) {
-            log.error("Error calling TNC API: {}", e.getMessage());
-            throw e;
         }
     }
 }
