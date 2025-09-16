@@ -262,7 +262,7 @@ public class ATRBPNCustomLoginAuthenticator  implements Authenticator {
 
             // *** TnC ***
             TncRequest tncRequest = new TncRequest(userModel.getAttributes().get("orcluserid").get(0), "internal");
-            TncResponse tncResponse = TncRestClient.postTncRequest("https://belajar.atrbpn.go.id/akuntnc/api/user-tnc", tncRequest);
+            TncResponse tncResponse = TncRestClient.postTncRequest(tncRequest);
             log.info("TNC API processed response: {}", new ObjectMapper().writeValueAsString(tncResponse));
             responseMap.put("tnc", tncResponse);
 
