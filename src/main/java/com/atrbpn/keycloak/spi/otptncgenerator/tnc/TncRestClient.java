@@ -1,6 +1,5 @@
 package com.atrbpn.keycloak.spi.otptncgenerator.tnc;
 
-import com.atrbpn.keycloak.spi.otptncgenerator.ATRBPNCustomLoginAuthenticator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
@@ -17,7 +16,7 @@ public class TncRestClient {
 
     private static final Logger log = LoggerFactory.getLogger(TncRestClient.class);
     
-    private static String tncApiBaseUrl;
+    public static String tncApiBaseUrl;
     
     static {
         try {
@@ -27,6 +26,7 @@ public class TncRestClient {
             log.info("tncApiBaseUrl: {}", tncApiBaseUrl);
 
         } catch (Exception ex) {
+            tncApiBaseUrl = null;
             log.error("unable to get jndi connection for SMTP or Environment");
             log.error(ex.getMessage(), ex);
         }
@@ -49,7 +49,6 @@ public class TncRestClient {
 
         int status = conn.getResponseCode();
         if (status != 200) {
-            log.error("REST request failed with status: " + status);
             throw new IOException("REST request failed with status: " + status);
         }
 

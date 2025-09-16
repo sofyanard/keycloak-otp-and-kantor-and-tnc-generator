@@ -250,12 +250,15 @@ public class ATRBPNCustomLoginAuthenticator  implements Authenticator {
                 thread.start();
             }
 
-            // *** TnC ***
-            TncRequest tncRequest = new TncRequest(userModel.getAttributes().get("orcluserid").get(0), "internal");
-            TncResponse tncResponse = TncRestClient.postTncRequest(tncRequest);
-            log.info("TNC API processed response: {}", new ObjectMapper().writeValueAsString(tncResponse));
-            responseMap.put("tnc", tncResponse);
+            // Get TnC from external API
+            if (TncRestClient.tncApiBaseUrl != null && !TncRestClient.tncApiBaseUrl.trim().isEmpty()) {
+                TncRequest tncRequest = new TncRequest(userModel.getAttributes().get("orcluserid").get(0), "internal");
+                TncResponse tncResponse = TncRestClient.postTncRequest(tncRequest);
+                log.info("TNC API response: {}", new ObjectMapper().writeValueAsString(tncResponse));
+                responseMap.put("tnc", tncResponse);
+            }
 
+            // write response
             response = new ObjectMapper().writeValueAsString(responseMap);
 
         }  catch (Exception ex) {
