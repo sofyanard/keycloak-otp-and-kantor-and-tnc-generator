@@ -253,7 +253,7 @@ public class ATRBPNCustomLoginAuthenticator  implements Authenticator {
             // Get TnC from external API
             if (TncRestClient.tncApiBaseUrl != null && !TncRestClient.tncApiBaseUrl.trim().isEmpty()) {
                 TncRequest tncRequest = new TncRequest(userModel.getAttributes().get("orcluserid").get(0), "internal");
-                TncResponse tncResponse = TncRestClient.postTncRequest(tncRequest);
+                TncResponse tncResponse = TncRestClient.verifyUser(tncRequest);
                 log.info("TNC API response: {}", new ObjectMapper().writeValueAsString(tncResponse));
                 responseMap.put("tnc", tncResponse);
             }

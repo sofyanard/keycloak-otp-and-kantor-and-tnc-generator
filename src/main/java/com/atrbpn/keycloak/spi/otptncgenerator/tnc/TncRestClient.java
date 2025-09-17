@@ -34,7 +34,7 @@ public class TncRestClient {
     
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    public static TncResponse postTncRequest(TncRequest request) throws IOException {
+    public static TncResponse verifyUser(TncRequest request) throws IOException {
         
         // Do REST POST request
         URL url = new URL(tncApiBaseUrl);
@@ -73,20 +73,20 @@ public class TncRestClient {
         } else {
             throw new IOException("Unknown TNC response type: " + message);
         }
-        return toCommonTncData(responseObj);
+        return toCommonResponse(responseObj);
     }
 
-    public static TncResponse toCommonTncData(Object tncResponse) {
-        if (tncResponse instanceof TncUnupdatedResponse) {
-            TncUnupdatedResponse r = (TncUnupdatedResponse) tncResponse;
+    public static TncResponse toCommonResponse(Object responseObj) {
+        if (responseObj instanceof TncUnupdatedResponse) {
+            TncUnupdatedResponse r = (TncUnupdatedResponse) responseObj;
             return new TncResponse(
                 r.isSuccess(),
                 r.getMessage(),
                 r.getData() != null ? r.getData().getKonten() : null,
                 r.getData() != null ? r.getData().getUrl() : null
             );
-        } else if (tncResponse instanceof TncUpdatedResponse) {
-            TncUpdatedResponse r = (TncUpdatedResponse) tncResponse;
+        } else if (responseObj instanceof TncUpdatedResponse) {
+            TncUpdatedResponse r = (TncUpdatedResponse) responseObj;
             // Assume only one item in data list
             TncUpdatedResponse.TncUpdatedResponseData d = (r.getData() != null && !r.getData().isEmpty()) ? r.getData().get(0) : null;
             return new TncResponse(
@@ -96,7 +96,7 @@ public class TncRestClient {
                 d != null ? d.getUrl() : null
             );
         }
-        throw new IllegalArgumentException("Unknown TNC response type: " + tncResponse.getClass());
+        throw new IllegalArgumentException("Unknown TNC response type: " + responseObj.getClass());
     }
 
 }
