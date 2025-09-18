@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 public class TncRestClient {
 
     private static final Logger log = LoggerFactory.getLogger(TncRestClient.class);
-    
+    private static final ObjectMapper objectMapper = new ObjectMapper();
     public static String tncApiBaseUrl;
     
     static {
@@ -32,8 +32,6 @@ public class TncRestClient {
         }
     }
     
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-
     public static TncResponse verifyUser(TncRequest request) throws IOException {
         
         // Do REST POST request
@@ -61,42 +59,7 @@ public class TncRestClient {
         conn.disconnect();
         String jsonString = jsonBuilder.toString();
 
-        // Read field "message" to determine type
-        String message = objectMapper.readTree(jsonString).get("message").asText();
-
-        // Return one of the class objects
-        Object responseObj;
-        if (message != null && message.toLowerCase().contains("pengguna sudah menggunakan t&c terbaru")) {
-            responseObj = objectMapper.readValue(jsonString, TncUpdatedResponse.class);
-        } else if (message != null && message.toLowerCase().contains("perbaharui t&c terbaru")) {
-            responseObj = objectMapper.readValue(jsonString, TncUnupdatedResponse.class);
-        } else {
-            throw new IOException("Unknown TNC response type: " + message);
-        }
-        return toCommonResponse(responseObj);
-    }
-
-    public static TncResponse toCommonResponse(Object responseObj) {
-        if (responseObj instanceof TncUnupdatedResponse) {
-            TncUnupdatedResponse r = (TncUnupdatedResponse) responseObj;
-            return new TncResponse(
-                r.isSuccess(),
-                r.getMessage(),
-                r.getData() != null ? r.getData().getKonten() : null,
-                r.getData() != null ? r.getData().getUrl() : null
-            );
-        } else if (responseObj instanceof TncUpdatedResponse) {
-            TncUpdatedResponse r = (TncUpdatedResponse) responseObj;
-            // Assume only one item in data list
-            TncUpdatedResponse.TncUpdatedResponseData d = (r.getData() != null && !r.getData().isEmpty()) ? r.getData().get(0) : null;
-            return new TncResponse(
-                r.isSuccess(),
-                r.getMessage(),
-                d != null ? d.getKontenText() : null,
-                d != null ? d.getUrl() : null
-            );
-        }
-        throw new IllegalArgumentException("Unknown TNC response type: " + responseObj.getClass());
+        return objectMapper.readValue(jsonString, TncResponse.class);
     }
 
 }
