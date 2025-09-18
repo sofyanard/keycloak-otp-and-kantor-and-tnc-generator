@@ -256,6 +256,14 @@ public class ATRBPNCustomLoginAuthenticator  implements Authenticator {
                 TncResponse tncResponse = TncRestClient.verifyUser(tncRequest);
                 log.info("TNC API response: {}", new ObjectMapper().writeValueAsString(tncResponse));
                 responseMap.put("tnc", tncResponse);
+
+                // if tnc_status = 0, save tncid to user attribute for next use
+                /*
+                if (tncResponse != null && tncResponse.getData() != null && tncResponse.getData().getStatusTnc() == 0) {
+                    userModel.setSingleAttribute("tnc", tncResponse.getData().getTncTerbaruId());
+                    log.info("Saving TnCId to user attribute: {}", tncResponse.getData().getTncTerbaruId());
+                }
+                */
             }
 
             // write response
